@@ -3,6 +3,7 @@ name = "git-gateway"
 version = "0.1.0"
 description = ""
 authors = ["Elijah Wilson <eli@noteable.io>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.11"
