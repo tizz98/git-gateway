@@ -1,5 +1,9 @@
 FROM python:3.11-slim-bullseye as python-base
 
+RUN apt-get update && apt-get install git -y --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # https://python-poetry.org/docs#ci-recommendations
 ENV POETRY_VERSION=1.2.2
 ENV POETRY_HOME=/opt/poetry
