@@ -51,8 +51,12 @@ class GitService:
         all_repos_dir.mkdir(parents=True, exist_ok=True)
         path = all_repos_dir / name
         if not path.exists():
-            await asyncio.get_event_loop().run_in_executor(
+            repo: Repository = await asyncio.get_event_loop().run_in_executor(
                 None, partial(init_repository, path, bare=True)
+            )
+            # Force HEAD to be a ref to main, otherwise we get weird errors when trying to clone.
+            await asyncio.get_event_loop().run_in_executor(
+                None, partial(repo.create_reference_symbolic, "HEAD", "refs/heads/main", force=True)
             )
             logger.info(f"Initialized repository at {path}")
         return path
@@ -118,15 +122,11 @@ class GitService:
         try:
             ref, _ = repo.resolve_refish(ref)
         except KeyError:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Ref not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ref not found")
 
         try:
             blob = repo[ref.tree[path].id]
         except KeyError:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
 
         return Response(blob.data)
